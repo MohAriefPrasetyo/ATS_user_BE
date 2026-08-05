@@ -56,12 +56,12 @@ class AnakTidakSekolah extends Model
         'last_update',
         'soft_delete_ats',
         'unnamed_42',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
         'tanggal_lahir' => 'date',
-        'lintang' => 'decimal:7',
-        'bujur' => 'decimal:7',
         'aktif' => 'boolean',
         'create_date' => 'datetime',
         'last_update' => 'datetime',

@@ -38,7 +38,8 @@ class ImportAtsExcel extends Command
 
         try {
             Excel::import(new AnakTidakSekolahImport, $filePath);
-            $this->info("Berhasil! Seluruh data dari file Excel telah diimpor ke database.");
+            $count = \App\Models\AnakTidakSekolah::count();
+            $this->info("Berhasil! Total {$count} data Anak Tidak Sekolah saat ini tersimpan di database.");
             return Command::SUCCESS;
         } catch (\Exception $e) {
             $this->error("Gagal mengimpor file: " . $e->getMessage());

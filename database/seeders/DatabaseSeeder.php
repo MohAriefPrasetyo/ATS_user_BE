@@ -20,5 +20,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@ats.go.id',
             'role' => 'admin',
         ]);
+
+        $this->call(AnakTidakSekolahSeeder::class);
     }
 }

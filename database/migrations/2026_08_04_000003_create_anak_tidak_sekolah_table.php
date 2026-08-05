@@ -44,8 +44,8 @@ return new class extends Migration
             $table->text('alamat_jalan')->nullable();
             $table->string('rt', 10)->nullable();
             $table->string('rw', 10)->nullable();
-            $table->decimal('lintang', 10, 7)->nullable();
-            $table->decimal('bujur', 10, 7)->nullable();
+            $table->string('lintang', 50)->nullable();
+            $table->string('bujur', 50)->nullable();
 
             // Status Approval & Validasi System
             $table->string('status_approval')->nullable();
