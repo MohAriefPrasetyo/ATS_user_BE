@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Imports\AnakTidakSekolahImport;
 use App\Models\AnakTidakSekolah;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AnakTidakSekolahController extends Controller
 {
@@ -110,5 +112,29 @@ class AnakTidakSekolahController extends Controller
             'success' => true,
             'message' => 'Data Anak Tidak Sekolah berhasil dihapus.'
         ]);
+    }
+
+    /**
+     * Import data Excel ATS (43 Kolom).
+     */
+    public function import(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
+        ]);
+
+        try {
+            Excel::import(new AnakTidakSekolahImport, $request->file('file'));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Excel Anak Tidak Sekolah berhasil diimpor.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengimpor file Excel: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

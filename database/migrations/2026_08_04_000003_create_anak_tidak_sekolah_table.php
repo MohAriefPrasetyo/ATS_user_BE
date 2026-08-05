@@ -65,6 +65,7 @@ return new class extends Migration
             $table->timestamp('create_date')->nullable();
             $table->timestamp('last_update')->nullable();
             $table->timestamp('soft_delete_ats')->nullable();
+            $table->text('unnamed_42')->nullable();
 
             $table->timestamps();
             $table->softDeletes();
