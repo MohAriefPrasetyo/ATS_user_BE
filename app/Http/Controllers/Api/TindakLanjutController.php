@@ -40,10 +40,18 @@ class TindakLanjutController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage (Form Tindak Lanjut).
+     * Store a newly created resource in storage (Form Tindak Lanjut - Khusus Admin).
      */
     public function store(Request $request): JsonResponse
     {
+        // Proteksi Hak Akses Admin
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Pengisian form Tindak Lanjut hanya dapat dilakukan oleh Admin.'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'anak_tidak_sekolah_id' => 'required|exists:anak_tidak_sekolah,id',
             'keterangan'            => 'required|string|max:255',
@@ -54,7 +62,6 @@ class TindakLanjutController extends Controller
             'dokumen_pendukung'     => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
             'foto_dokumentasi'      => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
-
 
         $data = $validated;
         $data['user_id'] = $request->user()?->id;
@@ -95,10 +102,18 @@ class TindakLanjutController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified resource in storage (Khusus Admin).
      */
     public function update(Request $request, string $id): JsonResponse
     {
+        // Proteksi Hak Akses Admin
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Pengubahan data Tindak Lanjut hanya dapat dilakukan oleh Admin.'
+            ], 403);
+        }
+
         $tindakLanjut = TindakLanjut::findOrFail($id);
 
         $validated = $request->validate([
@@ -111,7 +126,6 @@ class TindakLanjutController extends Controller
             'dokumen_pendukung'     => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
             'foto_dokumentasi'      => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
-
 
         $data = $validated;
 
@@ -141,10 +155,18 @@ class TindakLanjutController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (Khusus Admin).
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
+        // Proteksi Hak Akses Admin
+        if (!$request->user() || $request->user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Penghapusan data Tindak Lanjut hanya dapat dilakukan oleh Admin.'
+            ], 403);
+        }
+
         $tindakLanjut = TindakLanjut::findOrFail($id);
         $tindakLanjut->delete();
 
