@@ -2,32 +2,28 @@
 
 namespace Database\Seeders;
 
-use App\Imports\AnakTidakSekolahImport;
 use Illuminate\Database\Seeder;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 class AnakTidakSekolahSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $filePath = base_path('ATS_fix.xlsx');
+        $path = storage_path('app/ATS_fix.csv'); // Sesuaikan letak file CSV Anda
 
-        if (!File::exists($filePath)) {
-            $this->command->error("File ATS_fix.xlsx tidak ditemukan di root project!");
-            return;
-        }
+        if (($handle = fopen($path, 'r')) !== FALSE) {
+            $header = fgetcsv($handle); // Ambil baris pertama sebagai nama kolom
 
-        $this->command->info("Mengimpor data dari ATS_fix.xlsx ke database...");
+            while (($row = fgetcsv($handle)) !== FALSE) {
+                if (count($header) === count($row)) {
+                    $data = array_combine($header, $row);
 
-        try {
-            Excel::import(new AnakTidakSekolahImport, $filePath);
-            $this->command->info("Berhasil mengimpor data ATS_fix.xlsx ke tabel anak_tidak_sekolah!");
-        } catch (\Exception $e) {
-            $this->command->error("Gagal mengimpor data: " . $e->getMessage());
+                    // Masukkan data ke tabel yang sudah ada
+                    DB::table('anak_tidak_sekolah')->insert($data);
+                }
+            }
+            fclose($handle);
         }
     }
 }
+

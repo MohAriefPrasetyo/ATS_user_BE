@@ -12,11 +12,15 @@ use Maatwebsite\Excel\Facades\Excel;
 class AnakTidakSekolahController extends Controller
 {
     /**
-     * Display a listing of the resource (Tampilan Tabel Depan).
+     * Display a listing of the resource (Tampilan Tabel Depan ATS).
+     * Mendukung filter status penanganan tindak lanjut:
+     * - filter_tindak_lanjut=sudah_ditindaklanjuti
+     * - filter_tindak_lanjut=belum_ditindaklanjuti
+     * - keterangan_tindak_lanjut=Kembali Sekolah
      */
     public function index(Request $request): JsonResponse
     {
-        $query = AnakTidakSekolah::query();
+        $query = AnakTidakSekolah::with('tindakLanjuts');
 
         // Search NIK, NISN, atau Nama
         if ($request->filled('search')) {
@@ -36,9 +40,27 @@ class AnakTidakSekolahController extends Controller
             $query->where('kabupaten', $request->kabupaten);
         }
 
-        // Filter Status
+        // Filter Status Baku ATS
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+        }
+
+        // Filter Penanganan (Sudah / Belum Ditindaklanjuti)
+        if ($request->filled('filter_tindak_lanjut')) {
+            $filter = $request->filter_tindak_lanjut;
+            if ($filter === 'sudah_ditindaklanjuti') {
+                $query->has('tindakLanjuts');
+            } elseif ($filter === 'belum_ditindaklanjuti') {
+                $query->doesntHave('tindakLanjuts');
+            }
+        }
+
+        // Filter spesifik berdasarkan hasil Keterangan Tindak Lanjut (misal: "Kembali Sekolah", "Bekerja", dll)
+        if ($request->filled('keterangan_tindak_lanjut')) {
+            $keterangan = $request->keterangan_tindak_lanjut;
+            $query->whereHas('tindakLanjuts', function ($q) use ($keterangan) {
+                $q->where('keterangan', $keterangan);
+            });
         }
 
         $data = $query->orderBy('created_at', 'desc')
@@ -52,15 +74,15 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Display the specified resource (Detail View 43 Kolom).
+     * Display the specified resource (Detail View 43 Kolom + Riwayat Tindak Lanjut).
      */
     public function show(string $id): JsonResponse
     {
-        $ats = AnakTidakSekolah::findOrFail($id);
+        $ats = AnakTidakSekolah::with(['tindakLanjuts.user'])->findOrFail($id);
 
         return response()->json([
             'success' => true,
-            'message' => 'Detail data Anak Tidak Sekolah (43 Kolom).',
+            'message' => 'Detail data Anak Tidak Sekolah beserta riwayat tindak lanjut.',
             'data'    => $ats
         ]);
     }

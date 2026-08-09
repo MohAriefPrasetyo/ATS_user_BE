@@ -67,4 +67,13 @@ class AnakTidakSekolah extends Model
         'last_update' => 'datetime',
         'soft_delete_ats' => 'datetime',
     ];
+
+    /**
+     * Relasi ke Tindak Lanjut
+     */
+    public function tindakLanjuts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TindakLanjut::class, 'anak_tidak_sekolah_id');
+    }
 }
+
