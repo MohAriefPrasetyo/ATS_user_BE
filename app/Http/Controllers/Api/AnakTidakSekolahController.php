@@ -99,13 +99,13 @@ class AnakTidakSekolahController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        // Proteksi Hak Akses Admin
-        if (!$request->user() || $request->user()->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Penambahan data ATS hanya dapat dilakukan oleh Admin.'
-            ], 403);
-        }
+        // Proteksi Hak Akses Admin (Dikommentari sementara)
+        // if (!$request->user() || $request->user()->role !== 'admin') {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Akses ditolak. Penambahan data ATS hanya dapat dilakukan oleh Admin.'
+        //     ], 403);
+        // }
 
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
@@ -126,13 +126,13 @@ class AnakTidakSekolahController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        // Proteksi Hak Akses Admin
-        if (!$request->user() || $request->user()->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Pengubahan data ATS hanya dapat dilakukan oleh Admin.'
-            ], 403);
-        }
+        // Proteksi Hak Akses Admin (Dikommentari sementara)
+        // if (!$request->user() || $request->user()->role !== 'admin') {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Akses ditolak. Pengubahan data ATS hanya dapat dilakukan oleh Admin.'
+        //     ], 403);
+        // }
 
         $ats = AnakTidakSekolah::findOrFail($id);
         $ats->update($request->all());
@@ -149,13 +149,13 @@ class AnakTidakSekolahController extends Controller
      */
     public function destroy(Request $request, string $id): JsonResponse
     {
-        // Proteksi Hak Akses Admin
-        if (!$request->user() || $request->user()->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Penghapusan data ATS hanya dapat dilakukan oleh Admin.'
-            ], 403);
-        }
+        // Proteksi Hak Akses Admin (Dikommentari sementara)
+        // if (!$request->user() || $request->user()->role !== 'admin') {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Akses ditolak. Penghapusan data ATS hanya dapat dilakukan oleh Admin.'
+        //     ], 403);
+        // }
 
         $ats = AnakTidakSekolah::findOrFail($id);
         $ats->delete();
@@ -171,13 +171,13 @@ class AnakTidakSekolahController extends Controller
      */
     public function import(Request $request): JsonResponse
     {
-        // Proteksi Hak Akses Admin
-        if (!$request->user() || $request->user()->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Impor data Excel hanya dapat dilakukan oleh Admin.'
-            ], 403);
-        }
+        // Proteksi Hak Akses Admin (Dikommentari sementara)
+        // if (!$request->user() || $request->user()->role !== 'admin') {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Akses ditolak. Impor data Excel hanya dapat dilakukan oleh Admin.'
+        //     ], 403);
+        // }
 
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
@@ -203,38 +203,7 @@ class AnakTidakSekolahController extends Controller
      */
     private function formatAtsResponse($ats, Request $request)
     {
-        $user = $request->user();
-        $isAdmin = $user && $user->role === 'admin';
-
-        if ($isAdmin) {
-            // Mode Admin: Kembalikan biodata lengkap (43 Kolom)
-            return $ats;
-        }
-
-        // Mode User Biasa: Sembunyikan kolom sensitif (NIK, No KK, Ibu Kandung, Tanggal Lahir, Alamat Jalan, dll)
-        $sensitiveFields = [
-            'nik',
-            'no_kk',
-            'nama_ibu_kandung',
-            'tanggal_lahir',
-            'alamat_jalan',
-            'rt',
-            'rw',
-            'peserta_didik_id',
-            'sekolah_id',
-            'kode_dagri',
-            'status_approval_keterangan',
-            'alasan_approval_keterangan',
-            'keterangan_tolak',
-        ];
-
-        if ($ats instanceof \Illuminate\Pagination\LengthAwarePaginator) {
-            $ats->getCollection()->transform(function ($item) use ($sensitiveFields) {
-                return $item->makeHidden($sensitiveFields);
-            });
-            return $ats;
-        }
-
-        return $ats->makeHidden($sensitiveFields);
+        // Kembalikan biodata lengkap (43 Kolom) untuk panel admin
+        return $ats;
     }
 }

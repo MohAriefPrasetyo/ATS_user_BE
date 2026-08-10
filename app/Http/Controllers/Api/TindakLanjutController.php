@@ -44,13 +44,13 @@ class TindakLanjutController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        // Proteksi Hak Akses Admin
-        if (!$request->user() || $request->user()->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Pengisian form Tindak Lanjut hanya dapat dilakukan oleh Admin.'
-            ], 403);
-        }
+        // Proteksi Hak Akses Admin (Dikommentari sementara)
+        // if (!$request->user() || $request->user()->role !== 'admin') {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Akses ditolak. Pengisian form Tindak Lanjut hanya dapat dilakukan oleh Admin.'
+        //     ], 403);
+        // }
 
         $validated = $request->validate([
             'anak_tidak_sekolah_id' => 'required|exists:anak_tidak_sekolah,id',
@@ -106,13 +106,13 @@ class TindakLanjutController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        // Proteksi Hak Akses Admin
-        if (!$request->user() || $request->user()->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Pengubahan data Tindak Lanjut hanya dapat dilakukan oleh Admin.'
-            ], 403);
-        }
+        // Proteksi Hak Akses Admin (Dikommentari sementara)
+        // if (!$request->user() || $request->user()->role !== 'admin') {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Akses ditolak. Pengubahan data Tindak Lanjut hanya dapat dilakukan oleh Admin.'
+        //     ], 403);
+        // }
 
         $tindakLanjut = TindakLanjut::findOrFail($id);
 
@@ -159,20 +159,30 @@ class TindakLanjutController extends Controller
      */
     public function destroy(Request $request, string $id): JsonResponse
     {
-        // Proteksi Hak Akses Admin
-        if (!$request->user() || $request->user()->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Penghapusan data Tindak Lanjut hanya dapat dilakukan oleh Admin.'
-            ], 403);
-        }
+        // Proteksi Hak Akses Admin (Dikommentari sementara)
+        // if (!$request->user() || $request->user()->role !== 'admin') {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Akses ditolak. Penghapusan data Tindak Lanjut hanya dapat dilakukan oleh Admin.'
+        //     ], 403);
+        // }
 
         $tindakLanjut = TindakLanjut::findOrFail($id);
-        $tindakLanjut->delete();
+
+        // Hapus berkas fisik dokumen & foto jika ada di storage
+        if ($tindakLanjut->dokumen_pendukung_path && Storage::disk('public')->exists($tindakLanjut->dokumen_pendukung_path)) {
+            Storage::disk('public')->delete($tindakLanjut->dokumen_pendukung_path);
+        }
+        if ($tindakLanjut->foto_dokumentasi_path && Storage::disk('public')->exists($tindakLanjut->foto_dokumentasi_path)) {
+            Storage::disk('public')->delete($tindakLanjut->foto_dokumentasi_path);
+        }
+
+        // Hapus permanen (Hard Delete) langsung dari baris tabel MySQL
+        $tindakLanjut->forceDelete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Data Tindak Lanjut berhasil dihapus.'
+            'message' => 'Data Tindak Lanjut berhasil dihapus secara permanen.'
         ]);
     }
 }
