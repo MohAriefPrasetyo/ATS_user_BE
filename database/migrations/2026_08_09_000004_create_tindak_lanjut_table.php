@@ -33,6 +33,8 @@ return new class extends Migration
 
             // Kolom Tambahan Pendukung Operasional ATS
             $table->text('program_intervensi')->nullable(); // Program intervensi yang disarankan (misal: Beasiswa, Paket B, PKH, dll)
+            $table->date('tanggal_tindak_lanjut')->nullable(); // Tanggal pelaksanaan kunjungan/tindak lanjut
+
 
 
 

@@ -53,6 +53,7 @@ class TindakLanjutController extends Controller
             'keterangan'            => 'required|string|max:255',
             'alasan'                => 'nullable|string',
             'program_intervensi'    => 'nullable|string',
+            'tanggal_tindak_lanjut' => 'nullable|date',
             
             // Validasi file upload (Maksimal 10 MB = 10240 KB)
             'dokumen_pendukung'     => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
@@ -116,6 +117,7 @@ class TindakLanjutController extends Controller
             'keterangan'            => 'sometimes|required|string|max:255',
             'alasan'                => 'nullable|string',
             'program_intervensi'    => 'nullable|string',
+            'tanggal_tindak_lanjut' => 'nullable|date',
             
             // Validasi file upload (Maksimal 10 MB = 10240 KB)
             'dokumen_pendukung'     => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',

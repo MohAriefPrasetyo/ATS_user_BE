@@ -21,6 +21,11 @@ class TindakLanjut extends Model
         'program_intervensi',
         'dokumen_pendukung_path',
         'foto_dokumentasi_path',
+        'tanggal_tindak_lanjut',
+    ];
+
+    protected $casts = [
+        'tanggal_tindak_lanjut' => 'date',
     ];
 
     /**

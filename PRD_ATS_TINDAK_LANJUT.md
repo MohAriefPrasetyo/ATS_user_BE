@@ -3,7 +3,7 @@
 
 * **Nama Proyek**: ATS User Backend (Laravel REST API)
 * **Target Auditor / User**: Frontend Developer (Web / Mobile) & Backend Developer
-* **Versi Dokumen**: 1.3.0 (Fokus Murni Field Form UI: Keterangan, Alasan, Program Intervensi, Dokumen, Foto)
+* **Versi Dokumen**: 1.4.0 (Termasuk Tanggal Tindak Lanjut & Program Intervensi)
 * **Status**: Ready for Integration
 
 ---
@@ -14,7 +14,7 @@ Sistem Informasi ATS diciptakan untuk memfasilitasi pendataan, monitoring, dan p
 
 Sistem terdiri dari 2 modul utama:
 1. **Modul Master Data ATS** (Profil identitas anak 43 kolom).
-2. **Modul Tindak Lanjut** (Dokumentasi kunjungan lapangan, program intervensi yang disarankan, dokumen pendukung, dan foto bukti).
+2. **Modul Tindak Lanjut** (Dokumentasi kunjungan lapangan, tanggal pelaksanaan, program intervensi yang disarankan, dokumen pendukung, dan foto bukti).
 
 ---
 
@@ -46,7 +46,7 @@ Sistem membedakan respon data dan izin aksi berdasarkan **Role User**:
 | kabupaten              |           | program_intervensi    |
 | kecamatan              |           | dokumen_pendukung_path|
 | desa_kelurahan         |           | foto_dokumentasi_path |
-| status                 |           | created_at, updated_at|
+| status                 |           | tanggal_tindak_lanjut |
 | ... (Total 43 Kolom)   |           +-----------------------+
 +------------------------+
 ```
@@ -99,7 +99,8 @@ Sistem membedakan respon data dan izin aksi berdasarkan **Role User**:
             "program_intervensi": "Program Bantuan Beasiswa KIP & Paket B",
             "dokumen_pendukung_path": "tindak_lanjut/dokumen/surat_beasiswa.pdf",
             "foto_dokumentasi_path": "tindak_lanjut/foto/bukti_kunjungan.jpg",
-            "created_at": "2026-08-12T11:15:00.000000Z"
+            "tanggal_tindak_lanjut": "2026-08-12",
+            "created_at": "2026-08-12T13:16:00.000000Z"
           }
         ]
       }
@@ -123,6 +124,7 @@ Sistem membedakan respon data dan izin aksi berdasarkan **Role User**:
 | `keterangan` | String | **Ya** | Opsi/Pilihan Dropdown UI (*Kembali Sekolah*, *Bekerja*, *Menikah*, *Pindah*, dll) |
 | `alasan` | String / Text | Tidak | Catatan/alasan rincian hasil kunjungan |
 | `program_intervensi` | String / Text | Tidak | Program intervensi yang disarankan (misal: Beasiswa, PKH, Paket A/B/C, Pelatihan Kerja, KIP) |
+| `tanggal_tindak_lanjut` | Date (YYYY-MM-DD) | Tidak | **[DIKEMBALIKAN]** Tanggal pelaksanaan kunjungan/tindak lanjut |
 | `dokumen_pendukung` | File (PDF, DOC, DOCX, PNG, JPG) | Tidak | File Surat/Dokumen Pendukung (**Max 10 MB = 10,240 KB**) |
 | `foto_dokumentasi` | File (JPG, JPEG, PNG, WEBP) | Tidak | Foto Bukti Kunjungan Lapangan (**Max 10 MB = 10,240 KB**) |
 
@@ -138,9 +140,10 @@ Sistem membedakan respon data dan izin aksi berdasarkan **Role User**:
     "keterangan": "Kembali Sekolah",
     "alasan": "Telah didaftarkan kembali ke sekolah Paket B",
     "program_intervensi": "Bantuan Kartu Indonesia Pintar (KIP) & Pendampingan Belajar Paket B",
+    "tanggal_tindak_lanjut": "2026-08-12",
     "dokumen_pendukung_path": "tindak_lanjut/dokumen/abc123.pdf",
     "foto_dokumentasi_path": "tindak_lanjut/foto/xyz789.jpg",
-    "created_at": "2026-08-12T11:43:00.000000Z"
+    "created_at": "2026-08-12T13:16:00.000000Z"
   }
 }
 ```
@@ -148,7 +151,7 @@ Sistem membedakan respon data dan izin aksi berdasarkan **Role User**:
 ---
 
 #### B. PUT `/api/tindak-lanjut/{id}` *(Khusus Admin)*
-* **Fungsi**: Mengubah/Memperbarui form tindak lanjut & mengganti file lampiran / program intervensi.
+* **Fungsi**: Mengubah/Memperbarui form tindak lanjut & mengganti file lampiran / program intervensi / tanggal.
 
 ---
 
