@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uji Coba Download Laporan PDF ATS - Sulteng</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 600px;
+            padding: 32px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .header h2 {
+            margin: 0;
+            color: #1e293b;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 6px 0 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #334155;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        .btn-pdf {
+            background-color: #ef4444;
+            color: #ffffff;
+        }
+        .btn-pdf:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+        }
+        .btn-preview {
+            background-color: #3b82f6;
+            color: #ffffff;
+        }
+        .btn-preview:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+        .info-box {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-top: 24px;
+            font-size: 13px;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="header">
+            <h2>📄 Panel Uji Coba Download Laporan PDF</h2>
+            <p>Sistem Informasi Anak Tidak Sekolah (ATS) - Sulawesi Tengah</p>
+        </div>
+
+        <form id="downloadForm" action="/api/ats/export-pdf" method="GET" target="_blank">
+            
+            <div class="form-group">
+                <label for="filter_tindak_lanjut">Status Penanganan ATS</label>
+                <select id="filter_tindak_lanjut" name="filter_tindak_lanjut" class="form-control">
+                    <option value="">-- Semua Anak ATS --</option>
+                    <option value="sudah_ditindaklanjuti">Sudah Ditindaklanjuti</option>
+                    <option value="belum_ditindaklanjuti">Belum Ditindaklanjuti</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="keterangan_tindak_lanjut">Hasil Penanganan (Keterangan)</label>
+                <select id="keterangan_tindak_lanjut" name="keterangan_tindak_lanjut" class="form-control">
+                    <option value="">-- Semua Hasil Penanganan --</option>
+                    <option value="Kembali Sekolah">Kembali Sekolah</option>
+                    <option value="Bekerja">Bekerja</option>
+                    <option value="Menikah">Menikah</option>
+                    <option value="Pindah">Pindah Domisili</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="kabupaten">Kabupaten / Kota</label>
+                <input type="text" id="kabupaten" name="kabupaten" class="form-control" placeholder="Contoh: KOTA PALU atau KAB. MALANG">
+            </div>
+
+            <div class="form-group">
+                <label for="kecamatan">Kecamatan</label>
+                <input type="text" id="kecamatan" name="kecamatan" class="form-control" placeholder="Contoh: MANTIKULORE atau KEPANJEN">
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-pdf">
+                    📌 Download Laporan PDF
+                </button>
+            </div>
+        </form>
+
+        <div class="info-box">
+            💡 <strong>Petunjuk Uji Coba:</strong> Pilih filter di atas lalu klik tombol <strong>"Download Laporan PDF"</strong>. File PDF laporan resmi akan ter-generate dan otomatis diunduh berdasarkan kriteria filter yang Anda pilih.
+        </div>
+    </div>
+
+</body>
+</html>

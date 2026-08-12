@@ -3,7 +3,7 @@
 
 * **Nama Proyek**: ATS User Backend (Laravel REST API)
 * **Target Auditor / User**: Frontend Developer (Web / Mobile) & Backend Developer
-* **Versi Dokumen**: 1.4.0 (Termasuk Tanggal Tindak Lanjut & Program Intervensi)
+* **Versi Dokumen**: 1.5.0 (Termasuk Kerangka Endpoint Export Excel & PDF Terfilter)
 * **Status**: Ready for Integration
 
 ---
@@ -29,6 +29,7 @@ Sistem membedakan respon data dan izin aksi berdasarkan **Role User**:
 | **Membuka List/Detail Tindak Lanjut** | ✅ Diizinkan | ✅ Diizinkan |
 | **Menambah/Edit/Hapus ATS & Impor Excel**| ✅ Diizinkan | ❌ **403 Forbidden** |
 | **Mengisi Form Tindak Lanjut** | ✅ Diizinkan | ❌ **403 Forbidden** |
+| **Export File (Excel / PDF Terfilter)** | ✅ Diizinkan | ✅ Diizinkan |
 
 ---
 
@@ -71,43 +72,19 @@ Sistem membedakan respon data dan izin aksi berdasarkan **Role User**:
   - `per_page` *(int)*: Jumlah data per halaman (Default: 15).
   - `page` *(int)*: Nomor halaman.
 
-* **Contoh Response `200 OK`**:
-```json
-{
-  "success": true,
-  "message": "Daftar data Anak Tidak Sekolah berhasil diambil.",
-  "is_admin": true,
-  "data": {
-    "current_page": 1,
-    "data": [
-      {
-        "id": 1,
-        "nik": "3507123456780001",
-        "nisn": "0051234567",
-        "nama": "Budi Santoso",
-        "jenis_kelamin": "Laki-laki",
-        "nama_ibu_kandung": "Siti Aminah",
-        "kabupaten": "KAB. MALANG",
-        "kecamatan": "KEPANJEN",
-        "desa_kelurahan": "ARDIREJO",
-        "status": "Belum Sekolah",
-        "tindak_lanjuts": [
-          {
-            "id": 5,
-            "keterangan": "Kembali Sekolah",
-            "alasan": "Anak telah didaftarkan ke SMP Negeri 1 Kepanjen",
-            "program_intervensi": "Program Bantuan Beasiswa KIP & Paket B",
-            "dokumen_pendukung_path": "tindak_lanjut/dokumen/surat_beasiswa.pdf",
-            "foto_dokumentasi_path": "tindak_lanjut/foto/bukti_kunjungan.jpg",
-            "tanggal_tindak_lanjut": "2026-08-12",
-            "created_at": "2026-08-12T13:16:00.000000Z"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+---
+
+#### B. GET `/api/ats/export-excel` *(BARU)*
+* **Fungsi**: Mengunduh file Excel (`.xlsx`) langsung berdasarkan parameter filter yang sedang aktif di UI Frontend.
+* **Query Parameters**: Sama persis dengan `GET /api/ats` (`search`, `kabupaten`, `kecamatan`, `filter_tindak_lanjut`, `keterangan_tindak_lanjut`).
+* **Response**: File Download binary stream `.xlsx`.
+
+---
+
+#### C. GET `/api/ats/export-pdf` *(BARU)*
+* **Fungsi**: Mengunduh file PDF resmi berdasarkan parameter filter yang sedang aktif di UI Frontend.
+* **Query Parameters**: Sama persis dengan `GET /api/ats`.
+* **Response**: Stream File PDF (atau JSON data siap cetak).
 
 ---
 
@@ -124,39 +101,9 @@ Sistem membedakan respon data dan izin aksi berdasarkan **Role User**:
 | `keterangan` | String | **Ya** | Opsi/Pilihan Dropdown UI (*Kembali Sekolah*, *Bekerja*, *Menikah*, *Pindah*, dll) |
 | `alasan` | String / Text | Tidak | Catatan/alasan rincian hasil kunjungan |
 | `program_intervensi` | String / Text | Tidak | Program intervensi yang disarankan (misal: Beasiswa, PKH, Paket A/B/C, Pelatihan Kerja, KIP) |
-| `tanggal_tindak_lanjut` | Date (YYYY-MM-DD) | Tidak | **[DIKEMBALIKAN]** Tanggal pelaksanaan kunjungan/tindak lanjut |
+| `tanggal_tindak_lanjut` | Date (YYYY-MM-DD) | Tidak | Tanggal pelaksanaan kunjungan/tindak lanjut |
 | `dokumen_pendukung` | File (PDF, DOC, DOCX, PNG, JPG) | Tidak | File Surat/Dokumen Pendukung (**Max 10 MB = 10,240 KB**) |
 | `foto_dokumentasi` | File (JPG, JPEG, PNG, WEBP) | Tidak | Foto Bukti Kunjungan Lapangan (**Max 10 MB = 10,240 KB**) |
-
-* **Response `201 Created`**:
-```json
-{
-  "success": true,
-  "message": "Data Tindak Lanjut berhasil disimpan.",
-  "data": {
-    "id": 12,
-    "anak_tidak_sekolah_id": 1,
-    "user_id": 3,
-    "keterangan": "Kembali Sekolah",
-    "alasan": "Telah didaftarkan kembali ke sekolah Paket B",
-    "program_intervensi": "Bantuan Kartu Indonesia Pintar (KIP) & Pendampingan Belajar Paket B",
-    "tanggal_tindak_lanjut": "2026-08-12",
-    "dokumen_pendukung_path": "tindak_lanjut/dokumen/abc123.pdf",
-    "foto_dokumentasi_path": "tindak_lanjut/foto/xyz789.jpg",
-    "created_at": "2026-08-12T13:16:00.000000Z"
-  }
-}
-```
-
----
-
-#### B. PUT `/api/tindak-lanjut/{id}` *(Khusus Admin)*
-* **Fungsi**: Mengubah/Memperbarui form tindak lanjut & mengganti file lampiran / program intervensi / tanggal.
-
----
-
-#### C. DELETE `/api/tindak-lanjut/{id}` *(Khusus Admin)*
-* **Fungsi**: Menghapus data tindak lanjut (Permanen / Hard Delete).
 
 ---
 
@@ -166,6 +113,3 @@ File yang diunggah (`dokumen_pendukung_path` & `foto_dokumentasi_path`) tersimpa
 
 Frontend dapat menampilkan/mengunduh file menggunakan URL:
 `http://<domain-backend>/storage/<path_file>`
-
-*Contoh*:
-`http://localhost:8000/storage/tindak_lanjut/foto/xyz789.jpg`

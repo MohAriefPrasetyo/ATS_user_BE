@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Route;
 | API Routes - Sistem ATS (Anak Tidak Sekolah & Tindak Lanjut)
 |--------------------------------------------------------------------------
 |
-| Rata-rata endpoint dibagi berdasarkan Hak Akses Role:
 | - RUTE PUBLIK (User Biasa) : Tampilan Data Ringkas & Read-Only
 | - RUTE ADMIN                : Biodata Lengkap (43 Kolom), Impor Excel, 
 |                                & Pengisian / Pengubahan Form Tindak Lanjut
@@ -17,14 +16,16 @@ use Illuminate\Support\Facades\Route;
 */
 
 // =========================================================================
-// 1. RUTE DATA ATS (Anak Tidak Sekolah)
+// 1. RUTE DATA ATS (Anak Tidak Sekolah) & EXPORT LAPORAN PDF
 // =========================================================================
-Route::get('ats', [AnakTidakSekolahController::class, 'index']);             // List Data ATS (Mendukung Filter Penanganan)
-Route::get('ats/{id}', [AnakTidakSekolahController::class, 'show']);         // Detail Data ATS (Full 43 Kolom untuk Admin)
-Route::post('ats/import', [AnakTidakSekolahController::class, 'import']);    // Impor Data Excel ATS (Admin)
-Route::post('ats', [AnakTidakSekolahController::class, 'store']);            // Tambah Data ATS Baru (Admin)
-Route::put('ats/{id}', [AnakTidakSekolahController::class, 'update']);       // Edit Data ATS (Admin)
-Route::delete('ats/{id}', [AnakTidakSekolahController::class, 'destroy']);   // Hapus Data ATS (Admin)
+Route::get('ats/export-pdf', [AnakTidakSekolahController::class, 'exportPdf']);      // Download Laporan PDF Resmi Terfilter
+Route::get('ats/export', [AnakTidakSekolahController::class, 'exportPdf']);          // Alias Endpoint Export PDF
+Route::get('ats', [AnakTidakSekolahController::class, 'index']);                     // List Data ATS (Filter Penanganan)
+Route::get('ats/{id}', [AnakTidakSekolahController::class, 'show']);                 // Detail Data ATS (Biodata Lengkap)
+Route::post('ats/import', [AnakTidakSekolahController::class, 'import']);            // Impor Data Excel ATS (Admin)
+Route::post('ats', [AnakTidakSekolahController::class, 'store']);                    // Tambah Data ATS Baru (Admin)
+Route::put('ats/{id}', [AnakTidakSekolahController::class, 'update']);               // Edit Data ATS (Admin)
+Route::delete('ats/{id}', [AnakTidakSekolahController::class, 'destroy']);           // Hapus Data ATS (Admin)
 
 // =========================================================================
 // 2. RUTE TINDAK LANJUT

@@ -12,101 +12,45 @@ use Maatwebsite\Excel\Facades\Excel;
 class AnakTidakSekolahController extends Controller
 {
     /**
-     * Display a listing of the resource (Tampilan Tabel Depan ATS).
-     * Mode Admin: Menampilkan Biodata Lengkap
-     * Mode User Biasa: Menampilkan Data Ringkas (Sembunyikan NIK, No KK, Ibu Kandung, dll)
+     * Display a listing of the resource (Tampilan Tabel Depan ATS - Biodata Lengkap).
+     * Mendukung filter status penanganan tindak lanjut:
+     * - filter_tindak_lanjut=sudah_ditindaklanjuti
+     * - filter_tindak_lanjut=belum_ditindaklanjuti
+     * - keterangan_tindak_lanjut=Kembali Sekolah
      */
     public function index(Request $request): JsonResponse
     {
-        $query = AnakTidakSekolah::with('tindakLanjuts');
+        $query = $this->buildFilteredQuery($request);
 
-        // Search NIK, NISN, atau Nama
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nik', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%")
-                  ->orWhere('nama', 'like', "%{$search}%");
-            });
-        }
-
-        // Filter Kecamatan & Kabupaten
-        if ($request->filled('kecamatan')) {
-            $query->where('kecamatan', $request->kecamatan);
-        }
-        if ($request->filled('kabupaten')) {
-            $query->where('kabupaten', $request->kabupaten);
-        }
-
-        // Filter Status Baku ATS
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Filter Penanganan (Sudah / Belum Ditindaklanjuti)
-        if ($request->filled('filter_tindak_lanjut')) {
-            $filter = $request->filter_tindak_lanjut;
-            if ($filter === 'sudah_ditindaklanjuti') {
-                $query->has('tindakLanjuts');
-            } elseif ($filter === 'belum_ditindaklanjuti') {
-                $query->doesntHave('tindakLanjuts');
-            }
-        }
-
-        // Filter spesifik berdasarkan hasil Keterangan Tindak Lanjut
-        if ($request->filled('keterangan_tindak_lanjut')) {
-            $keterangan = $request->keterangan_tindak_lanjut;
-            $query->whereHas('tindakLanjuts', function ($q) use ($keterangan) {
-                $q->where('keterangan', $keterangan);
-            });
-        }
-
-        $paginatedData = $query->orderBy('created_at', 'desc')
-                               ->paginate($request->get('per_page', 15));
-
-        // Format proteksi data berdasarkan role user (Admin vs User Biasa)
-        $data = $this->formatAtsResponse($paginatedData, $request);
+        $data = $query->orderBy('created_at', 'desc')
+                       ->paginate($request->get('per_page', 15));
 
         return response()->json([
             'success' => true,
             'message' => 'Daftar data Anak Tidak Sekolah berhasil diambil.',
-            'is_admin' => $request->user()?->role === 'admin',
             'data'    => $data
         ]);
     }
 
     /**
-     * Display the specified resource (Detail View ATS).
-     * Mode Admin: Full 43 Kolom Biodata Lengkap
-     * Mode User Biasa: Data Publik Ringkas
+     * Display the specified resource (Detail View ATS - Biodata Lengkap 43 Kolom).
      */
     public function show(Request $request, string $id): JsonResponse
     {
         $ats = AnakTidakSekolah::with(['tindakLanjuts.user'])->findOrFail($id);
 
-        $data = $this->formatAtsResponse($ats, $request);
-
         return response()->json([
             'success' => true,
             'message' => 'Detail data Anak Tidak Sekolah.',
-            'is_admin' => $request->user()?->role === 'admin',
-            'data'    => $data
+            'data'    => $ats
         ]);
     }
 
     /**
-     * Store a newly created resource in storage (Khusus Admin).
+     * Store a newly created resource in storage.
      */
     public function store(Request $request): JsonResponse
     {
-        // Proteksi Hak Akses Admin (Dikommentari sementara)
-        // if (!$request->user() || $request->user()->role !== 'admin') {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Akses ditolak. Penambahan data ATS hanya dapat dilakukan oleh Admin.'
-        //     ], 403);
-        // }
-
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'nik'  => 'nullable|string|size:16|unique:anak_tidak_sekolah,nik',
@@ -122,18 +66,10 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Update the specified resource in storage (Khusus Admin).
+     * Update the specified resource in storage.
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        // Proteksi Hak Akses Admin (Dikommentari sementara)
-        // if (!$request->user() || $request->user()->role !== 'admin') {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Akses ditolak. Pengubahan data ATS hanya dapat dilakukan oleh Admin.'
-        //     ], 403);
-        // }
-
         $ats = AnakTidakSekolah::findOrFail($id);
         $ats->update($request->all());
 
@@ -145,18 +81,10 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage (Khusus Admin).
+     * Remove the specified resource from storage.
      */
     public function destroy(Request $request, string $id): JsonResponse
     {
-        // Proteksi Hak Akses Admin (Dikommentari sementara)
-        // if (!$request->user() || $request->user()->role !== 'admin') {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Akses ditolak. Penghapusan data ATS hanya dapat dilakukan oleh Admin.'
-        //     ], 403);
-        // }
-
         $ats = AnakTidakSekolah::findOrFail($id);
         $ats->delete();
 
@@ -167,18 +95,10 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Import data Excel ATS (Khusus Admin).
+     * Import data Excel ATS.
      */
     public function import(Request $request): JsonResponse
     {
-        // Proteksi Hak Akses Admin (Dikommentari sementara)
-        // if (!$request->user() || $request->user()->role !== 'admin') {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Akses ditolak. Impor data Excel hanya dapat dilakukan oleh Admin.'
-        //     ], 403);
-        // }
-
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
         ]);
@@ -199,11 +119,65 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Helper internal untuk memfilter kolom sensitif jika user BUKAN Admin.
+     * EXPORT PDF DATA TERFILTER (Pure Backend API Endpoint):
+     * Mengambil data terfilter dari database dan mengembalikan data JSON / Stream Laporan.
      */
-    private function formatAtsResponse($ats, Request $request)
+    public function exportPdf(Request $request): JsonResponse
     {
-        // Kembalikan biodata lengkap (43 Kolom) untuk panel admin
-        return $ats;
+        $data = $this->buildFilteredQuery($request)->get();
+
+        return response()->json([
+            'success'    => true,
+            'message'    => 'Data laporan terfilter berhasil diproses oleh backend.',
+            'total_data' => $data->count(),
+            'filters'    => $request->only(['search', 'kabupaten', 'kecamatan', 'status', 'filter_tindak_lanjut', 'keterangan_tindak_lanjut']),
+            'data'       => $data
+        ]);
+    }
+
+    /**
+     * Internal Query Builder untuk memfilter data ATS secara terpusat.
+     */
+    private function buildFilteredQuery(Request $request)
+    {
+        $query = AnakTidakSekolah::with('tindakLanjuts');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nik', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%")
+                  ->orWhere('nama', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('kecamatan')) {
+            $query->where('kecamatan', $request->kecamatan);
+        }
+        if ($request->filled('kabupaten')) {
+            $query->where('kabupaten', $request->kabupaten);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('filter_tindak_lanjut')) {
+            $filter = $request->filter_tindak_lanjut;
+            if ($filter === 'sudah_ditindaklanjuti') {
+                $query->has('tindakLanjuts');
+            } elseif ($filter === 'belum_ditindaklanjuti') {
+                $query->doesntHave('tindakLanjuts');
+            }
+        }
+
+        if ($request->filled('keterangan_tindak_lanjut')) {
+            $keterangan = $request->keterangan_tindak_lanjut;
+            $query->whereHas('tindakLanjuts', function ($q) use ($keterangan) {
+                $q->where('keterangan', $keterangan);
+            });
+        }
+
+        return $query;
     }
 }
