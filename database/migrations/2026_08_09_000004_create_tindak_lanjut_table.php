@@ -32,8 +32,10 @@ return new class extends Migration
             $table->string('foto_dokumentasi_path')->nullable(); // Path foto dokumentasi kunjungan (max 10MB)
 
             // Kolom Tambahan Pendukung Operasional ATS
-            $table->date('tanggal_tindak_lanjut')->nullable(); // Tanggal pelaksanaan kunjungan
-            $table->string('status', 50)->default('pending'); // Status approval/verifikasi (pending, disetujui, ditolak)
+            $table->text('program_intervensi')->nullable(); // Program intervensi yang disarankan (misal: Beasiswa, Paket B, PKH, dll)
+
+
+
 
             $table->timestamps();
 

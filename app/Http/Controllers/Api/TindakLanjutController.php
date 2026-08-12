@@ -25,10 +25,6 @@ class TindakLanjutController extends Controller
             $query->where('keterangan', $request->keterangan);
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
         $data = $query->orderBy('created_at', 'desc')
                       ->paginate($request->get('per_page', 15));
 
@@ -56,7 +52,7 @@ class TindakLanjutController extends Controller
             'anak_tidak_sekolah_id' => 'required|exists:anak_tidak_sekolah,id',
             'keterangan'            => 'required|string|max:255',
             'alasan'                => 'nullable|string',
-            'tanggal_tindak_lanjut' => 'nullable|date',
+            'program_intervensi'    => 'nullable|string',
             
             // Validasi file upload (Maksimal 10 MB = 10240 KB)
             'dokumen_pendukung'     => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
@@ -119,8 +115,7 @@ class TindakLanjutController extends Controller
         $validated = $request->validate([
             'keterangan'            => 'sometimes|required|string|max:255',
             'alasan'                => 'nullable|string',
-            'tanggal_tindak_lanjut' => 'nullable|date',
-            'status'                => 'nullable|string|max:50',
+            'program_intervensi'    => 'nullable|string',
             
             // Validasi file upload (Maksimal 10 MB = 10240 KB)
             'dokumen_pendukung'     => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
