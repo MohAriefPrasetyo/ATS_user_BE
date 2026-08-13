@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Http\Request;
 
 class AnakTidakSekolah extends Model
 {
@@ -61,19 +64,65 @@ class AnakTidakSekolah extends Model
     ];
 
     protected $casts = [
-        'tanggal_lahir' => 'date',
-        'aktif' => 'boolean',
-        'create_date' => 'datetime',
-        'last_update' => 'datetime',
+        'tanggal_lahir'   => 'date',
+        'aktif'           => 'boolean',
+        'create_date'     => 'datetime',
+        'last_update'     => 'datetime',
         'soft_delete_ats' => 'datetime',
     ];
 
     /**
      * Relasi ke Tindak Lanjut
      */
-    public function tindakLanjuts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function tindakLanjuts(): HasMany
     {
         return $this->hasMany(TindakLanjut::class, 'anak_tidak_sekolah_id');
     }
-}
 
+    /**
+     * Scope query filter terpusat untuk Data ATS
+     */
+    public function scopeFilter(Builder $query, Request $request): Builder
+    {
+        $query->with('tindakLanjuts');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nik', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%")
+                  ->orWhere('nama', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('kecamatan')) {
+            $query->where('kecamatan', $request->kecamatan);
+        }
+
+        if ($request->filled('kabupaten')) {
+            $query->where('kabupaten', $request->kabupaten);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('filter_tindak_lanjut')) {
+            $filter = $request->filter_tindak_lanjut;
+            if ($filter === 'sudah_ditindaklanjuti') {
+                $query->has('tindakLanjuts');
+            } elseif ($filter === 'belum_ditindaklanjuti') {
+                $query->doesntHave('tindakLanjuts');
+            }
+        }
+
+        if ($request->filled('keterangan_tindak_lanjut')) {
+            $keterangan = $request->keterangan_tindak_lanjut;
+            $query->whereHas('tindakLanjuts', function ($q) use ($keterangan) {
+                $q->where('keterangan', $keterangan);
+            });
+        }
+
+        return $query;
+    }
+}

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreAnakTidakSekolahRequest;
 use App\Imports\AnakTidakSekolahImport;
 use App\Models\AnakTidakSekolah;
 use Illuminate\Http\JsonResponse;
@@ -12,18 +13,13 @@ use Maatwebsite\Excel\Facades\Excel;
 class AnakTidakSekolahController extends Controller
 {
     /**
-     * Display a listing of the resource (Tampilan Tabel Depan ATS - Biodata Lengkap).
-     * Mendukung filter status penanganan tindak lanjut:
-     * - filter_tindak_lanjut=sudah_ditindaklanjuti
-     * - filter_tindak_lanjut=belum_ditindaklanjuti
-     * - keterangan_tindak_lanjut=Kembali Sekolah
+     * Tampilan Tabel Depan ATS (Mendukung Search, Filter Wilayah, Status ATS, & Filter Tindak Lanjut).
      */
     public function index(Request $request): JsonResponse
     {
-        $query = $this->buildFilteredQuery($request);
-
-        $data = $query->orderBy('created_at', 'desc')
-                       ->paginate($request->get('per_page', 15));
+        $data = AnakTidakSekolah::filter($request)
+                    ->orderBy('created_at', 'desc')
+                    ->paginate($request->get('per_page', 15));
 
         return response()->json([
             'success' => true,
@@ -33,9 +29,9 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Display the specified resource (Detail View ATS - Biodata Lengkap 43 Kolom).
+     * Detail Data Anak Tidak Sekolah (43 Kolom Lengkap + Riwayat Tindak Lanjut).
      */
-    public function show(Request $request, string $id): JsonResponse
+    public function show(string $id): JsonResponse
     {
         $ats = AnakTidakSekolah::with(['tindakLanjuts.user'])->findOrFail($id);
 
@@ -47,16 +43,11 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Tambah Data ATS Baru.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreAnakTidakSekolahRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'nik'  => 'nullable|string|size:16|unique:anak_tidak_sekolah,nik',
-        ]);
-
-        $ats = AnakTidakSekolah::create($request->all());
+        $ats = AnakTidakSekolah::create($request->validated());
 
         return response()->json([
             'success' => true,
@@ -66,7 +57,7 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Edit / Update Data ATS.
      */
     public function update(Request $request, string $id): JsonResponse
     {
@@ -81,9 +72,9 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Hapus Data ATS.
      */
-    public function destroy(Request $request, string $id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
         $ats = AnakTidakSekolah::findOrFail($id);
         $ats->delete();
@@ -95,7 +86,7 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Import data Excel ATS.
+     * Impor Data Excel ATS.
      */
     public function import(Request $request): JsonResponse
     {
@@ -119,12 +110,11 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * EXPORT PDF DATA TERFILTER (Pure Backend API Endpoint):
-     * Mengambil data terfilter dari database dan mengembalikan data JSON / Stream Laporan.
+     * Endpoint Export Data Laporan PDF Terfilter.
      */
     public function exportPdf(Request $request): JsonResponse
     {
-        $data = $this->buildFilteredQuery($request)->get();
+        $data = AnakTidakSekolah::filter($request)->get();
 
         return response()->json([
             'success'    => true,
@@ -133,51 +123,5 @@ class AnakTidakSekolahController extends Controller
             'filters'    => $request->only(['search', 'kabupaten', 'kecamatan', 'status', 'filter_tindak_lanjut', 'keterangan_tindak_lanjut']),
             'data'       => $data
         ]);
-    }
-
-    /**
-     * Internal Query Builder untuk memfilter data ATS secara terpusat.
-     */
-    private function buildFilteredQuery(Request $request)
-    {
-        $query = AnakTidakSekolah::with('tindakLanjuts');
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nik', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%")
-                  ->orWhere('nama', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('kecamatan')) {
-            $query->where('kecamatan', $request->kecamatan);
-        }
-        if ($request->filled('kabupaten')) {
-            $query->where('kabupaten', $request->kabupaten);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('filter_tindak_lanjut')) {
-            $filter = $request->filter_tindak_lanjut;
-            if ($filter === 'sudah_ditindaklanjuti') {
-                $query->has('tindakLanjuts');
-            } elseif ($filter === 'belum_ditindaklanjuti') {
-                $query->doesntHave('tindakLanjuts');
-            }
-        }
-
-        if ($request->filled('keterangan_tindak_lanjut')) {
-            $keterangan = $request->keterangan_tindak_lanjut;
-            $query->whereHas('tindakLanjuts', function ($q) use ($keterangan) {
-                $q->where('keterangan', $keterangan);
-            });
-        }
-
-        return $query;
     }
 }
