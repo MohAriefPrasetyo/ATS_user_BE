@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAnakTidakSekolahRequest;
 use App\Imports\AnakTidakSekolahImport;
 use App\Models\AnakTidakSekolah;
+use App\Models\RiwayatImport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -86,22 +87,54 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Impor Data Excel ATS.
+     * Impor Data Excel ATS + Otomatis Mencatat Log di Riwayat Import.
      */
     public function import(Request $request): JsonResponse
     {
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
+            'periode_data' => 'nullable|string',
         ]);
 
+        $file = $request->file('file');
+        $namaBerkas = $file->getClientOriginalName();
+
         try {
-            Excel::import(new AnakTidakSekolahImport, $request->file('file'));
+            $beforeCount = AnakTidakSekolah::count();
+            Excel::import(new AnakTidakSekolahImport, $file);
+            $afterCount = AnakTidakSekolah::count();
+
+            $dataSukses = max(1, $afterCount - $beforeCount);
+            $periodeNumber = RiwayatImport::count() + 1;
+            $periodeData = $request->input('periode_data', 'Periode #' . $periodeNumber);
+
+            // Mencatat Log ke Tabel Riwayat Import
+            $riwayat = RiwayatImport::create([
+                'user_id'       => $request->user()?->id,
+                'periode_data'  => $periodeData,
+                'nama_berkas'   => $namaBerkas,
+                'data_sukses'   => $dataSukses,
+                'data_duplikat' => 0,
+                'status'        => 'Selesai',
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Data Excel Anak Tidak Sekolah berhasil diimpor.',
+                'data'    => $riwayat
             ]);
         } catch (\Exception $e) {
+            $periodeNumber = RiwayatImport::count() + 1;
+            RiwayatImport::create([
+                'user_id'       => $request->user()?->id,
+                'periode_data'  => $request->input('periode_data', 'Periode #' . $periodeNumber),
+                'nama_berkas'   => $namaBerkas,
+                'data_sukses'   => 0,
+                'data_duplikat' => 0,
+                'status'        => 'Gagal',
+                'catatan'       => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengimpor file Excel: ' . $e->getMessage(),

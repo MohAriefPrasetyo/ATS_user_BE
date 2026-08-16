@@ -15,12 +15,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'Admin ATS',
-            'email' => 'admin@ats.go.id',
-            'role' => 'admin',
-        ]);
+        // Menggunakan firstOrCreate agar tidak error duplicate entry saat dikirim ulang
+        User::firstOrCreate(
+            ['email' => 'admin@ats.go.id'],
+            [
+                'name'     => 'Admin ATS',
+                'password' => bcrypt('password'),
+                'role'     => 'admin',
+            ]
+        );
 
-        $this->call(AnakTidakSekolahSeeder::class);
+        if (class_exists(AnakTidakSekolahSeeder::class)) {
+            $this->call(AnakTidakSekolahSeeder::class);
+        }
+
+        $this->call(RiwayatImportSeeder::class);
     }
 }

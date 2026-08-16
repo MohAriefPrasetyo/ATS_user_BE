@@ -16,34 +16,34 @@ return new class extends Migration
 
             // 43 Kolom Murni Presisi 1-to-1 dengan File Excel
             $table->string('sekolah_id')->nullable();
-            $table->string('tahun', 20)->nullable();
-            $table->string('semester_id', 20)->nullable();
+            $table->string('tahun', 30)->nullable();
+            $table->string('semester_id', 30)->nullable();
             $table->string('peserta_didik_id')->nullable();
-            $table->string('nisn', 20)->nullable()->index();
-            $table->string('nik', 16)->nullable()->index();
-            $table->string('no_kk', 16)->nullable();
+            $table->string('nisn', 30)->nullable()->index();
+            $table->string('nik', 30)->nullable()->index();
+            $table->string('no_kk', 30)->nullable();
             $table->string('nama')->nullable();
-            $table->string('jenis_kelamin', 20)->nullable();
+            $table->string('jenis_kelamin', 30)->nullable();
             $table->string('tempat_lahir')->nullable();
             $table->date('tanggal_lahir')->nullable();
             $table->string('nama_ibu_kandung')->nullable();
             
             // Wilayah Administrasi (By Address)
-            $table->string('kode_provinsi', 20)->nullable();
+            $table->string('kode_provinsi', 30)->nullable();
             $table->string('provinsi')->nullable();
-            $table->string('kode_kabupaten', 20)->nullable();
+            $table->string('kode_kabupaten', 30)->nullable();
             $table->string('kabupaten')->nullable();
-            $table->string('kode_kecamatan', 20)->nullable();
+            $table->string('kode_kecamatan', 30)->nullable();
             $table->string('kecamatan')->nullable();
-            $table->string('kode_desa_kelurahan', 20)->nullable();
+            $table->string('kode_desa_kelurahan', 30)->nullable();
             $table->string('desa_kelurahan')->nullable();
             $table->string('kode_wilayah', 30)->nullable();
             $table->string('kode_dagri', 30)->nullable();
             
             // Alamat & Koordinat Presisi
             $table->text('alamat_jalan')->nullable();
-            $table->string('rt', 10)->nullable();
-            $table->string('rw', 10)->nullable();
+            $table->string('rt', 30)->nullable();
+            $table->string('rw', 30)->nullable();
             $table->string('lintang', 50)->nullable();
             $table->string('bujur', 50)->nullable();
 

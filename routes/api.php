@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AnakTidakSekolahController;
+use App\Http\Controllers\Api\RiwayatImportController;
 use App\Http\Controllers\Api\TindakLanjutController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,4 +30,10 @@ Route::controller(TindakLanjutController::class)->group(function () {
     Route::get('tindak-lanjut/{id}', 'show');
     Route::put('tindak-lanjut/{id}', 'update');
     Route::delete('tindak-lanjut/{id}', 'destroy');
+});
+
+// 3. Modul Riwayat Import & Log Data ATS
+Route::controller(RiwayatImportController::class)->group(function () {
+    Route::get('ats/riwayat-import', 'index');
+    Route::get('ats/riwayat-import/{id}', 'show');
 });
