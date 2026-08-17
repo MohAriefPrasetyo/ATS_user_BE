@@ -11,7 +11,13 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// 1. Modul Master Data ATS & Laporan Export
+// 1. Modul Riwayat Import & Log Data ATS
+Route::controller(RiwayatImportController::class)->group(function () {
+    Route::get('ats/riwayat-import', 'index');
+    Route::get('ats/riwayat-import/{id}', 'show');
+});
+
+// 2. Modul Master Data ATS & Laporan Export
 Route::controller(AnakTidakSekolahController::class)->group(function () {
     Route::get('ats/export-pdf', 'exportPdf');
     Route::get('ats/export', 'exportPdf');
@@ -23,7 +29,7 @@ Route::controller(AnakTidakSekolahController::class)->group(function () {
     Route::delete('ats/{id}', 'destroy');
 });
 
-// 2. Modul Form & Riwayat Tindak Lanjut
+// 3. Modul Form & Riwayat Tindak Lanjut
 Route::controller(TindakLanjutController::class)->group(function () {
     Route::get('tindak-lanjut', 'index');
     Route::post('tindak-lanjut', 'store');
@@ -32,8 +38,3 @@ Route::controller(TindakLanjutController::class)->group(function () {
     Route::delete('tindak-lanjut/{id}', 'destroy');
 });
 
-// 3. Modul Riwayat Import & Log Data ATS
-Route::controller(RiwayatImportController::class)->group(function () {
-    Route::get('ats/riwayat-import', 'index');
-    Route::get('ats/riwayat-import/{id}', 'show');
-});
