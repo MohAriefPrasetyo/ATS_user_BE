@@ -21,6 +21,7 @@ class TindakLanjut extends Model
         'program_intervensi',
         'dokumen_pendukung_path',
         'foto_dokumentasi_path',
+        'foto_rumah_path',
         'tanggal_tindak_lanjut',
     ];
 

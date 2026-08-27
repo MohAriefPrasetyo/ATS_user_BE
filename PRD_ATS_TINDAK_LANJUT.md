@@ -99,3 +99,4 @@ Sistem terdiri dari 3 modul utama:
 | `tanggal_tindak_lanjut` | Date (YYYY-MM-DD) | Tidak | Tanggal pelaksanaan kunjungan/tindak lanjut |
 | `dokumen_pendukung` | File | Tidak | File Surat/Dokumen Pendukung (**Max 10 MB**) |
 | `foto_dokumentasi` | File | Tidak | Foto Bukti Kunjungan Lapangan (**Max 10 MB**) |
+| `foto_rumah` | File | Tidak | Foto Dokumentasi Kondisi Rumah (**Max 10 MB**) |

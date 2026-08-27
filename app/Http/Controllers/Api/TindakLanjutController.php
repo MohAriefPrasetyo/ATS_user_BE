@@ -67,6 +67,10 @@ class TindakLanjutController extends Controller
             $data['foto_dokumentasi_path'] = $request->file('foto_dokumentasi')->store('tindak_lanjut/foto', 'public');
         }
 
+        if ($request->hasFile('foto_rumah')) {
+            $data['foto_rumah_path'] = $request->file('foto_rumah')->store('tindak_lanjut/foto_rumah', 'public');
+        }
+
         $tindakLanjut = TindakLanjut::create($data);
 
         return response()->json([
@@ -98,6 +102,13 @@ class TindakLanjutController extends Controller
             $data['foto_dokumentasi_path'] = $request->file('foto_dokumentasi')->store('tindak_lanjut/foto', 'public');
         }
 
+        if ($request->hasFile('foto_rumah')) {
+            if ($tindakLanjut->foto_rumah_path && Storage::disk('public')->exists($tindakLanjut->foto_rumah_path)) {
+                Storage::disk('public')->delete($tindakLanjut->foto_rumah_path);
+            }
+            $data['foto_rumah_path'] = $request->file('foto_rumah')->store('tindak_lanjut/foto_rumah', 'public');
+        }
+
         $tindakLanjut->update($data);
 
         return response()->json([
@@ -119,6 +130,9 @@ class TindakLanjutController extends Controller
         }
         if ($tindakLanjut->foto_dokumentasi_path && Storage::disk('public')->exists($tindakLanjut->foto_dokumentasi_path)) {
             Storage::disk('public')->delete($tindakLanjut->foto_dokumentasi_path);
+        }
+        if ($tindakLanjut->foto_rumah_path && Storage::disk('public')->exists($tindakLanjut->foto_rumah_path)) {
+            Storage::disk('public')->delete($tindakLanjut->foto_rumah_path);
         }
 
         $tindakLanjut->forceDelete();

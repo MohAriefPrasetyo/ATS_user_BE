@@ -21,6 +21,7 @@ class StoreTindakLanjutRequest extends FormRequest
             'tanggal_tindak_lanjut' => 'nullable|date',
             'dokumen_pendukung'     => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
             'foto_dokumentasi'      => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',
+            'foto_rumah'            => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',
         ];
     }
 }

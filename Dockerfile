@@ -33,4 +33,4 @@ RUN mkdir -p storage bootstrap/cache database && chmod -R 777 storage bootstrap/
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "git config --global --add safe.directory /var/www/html && composer install --no-interaction --ignore-platform-reqs && touch database/database.sqlite && php artisan key:generate --force && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"]
+CMD ["sh", "-c", "git config --global --add safe.directory /var/www/html && composer install --no-interaction --ignore-platform-reqs && touch database/database.sqlite && php artisan key:generate --force && php artisan storage:link --force && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"]
