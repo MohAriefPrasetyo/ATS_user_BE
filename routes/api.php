@@ -38,3 +38,4 @@ Route::controller(TindakLanjutController::class)->group(function () {
     Route::delete('tindak-lanjut/{id}', 'destroy');
 });
 
+
