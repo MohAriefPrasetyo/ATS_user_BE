@@ -38,4 +38,15 @@ Route::controller(TindakLanjutController::class)->group(function () {
     Route::delete('tindak-lanjut/{id}', 'destroy');
 });
 
+// 4. Modul Integrasi Sistem Mitigasi ATS (Zero-PII Data Sharing)
+Route::controller(\App\Http\Controllers\Api\MitigasiIntegrationController::class)->group(function () {
+    // Endpoint PULL: Menyuplai ringkasan agregat ke Sistem Mitigasi (dijaga Bearer Token)
+    Route::get('v1/mitigasi/ats-summary', 'getSummary')
+        ->middleware(\App\Http\Middleware\VerifyMitigasiBearerToken::class);
+
+    // Endpoint PUSH: Trigger penerbitan ringkasan secara instan via Webhook
+    Route::post('v1/mitigasi/push-summary', 'pushSummary');
+    Route::post('ats/mitigasi/push-summary', 'pushSummary');
+});
+
 
