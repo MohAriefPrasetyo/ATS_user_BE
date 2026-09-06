@@ -18,9 +18,17 @@ class AnakTidakSekolahController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $data = AnakTidakSekolah::filter($request)
-                    ->orderBy('created_at', 'desc')
-                    ->paginate($request->get('per_page', 15));
+        $query = AnakTidakSekolah::filter($request);
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->orderByRaw("CASE WHEN nama LIKE ? THEN 0 ELSE 1 END", ["{$search}%"])
+                  ->orderBy('nama', 'asc');
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $data = $query->paginate($request->get('per_page', 15));
 
         return response()->json([
             'success' => true,
