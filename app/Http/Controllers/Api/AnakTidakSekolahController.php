@@ -20,6 +20,23 @@ class AnakTidakSekolahController extends Controller
     {
         $query = AnakTidakSekolah::filter($request);
 
+        // Saring data secara otomatis jika user login adalah Admin dengan penugasan spesifik
+        $user = $request->user();
+        if ($user && ($user->role ?? null) === 'admin') {
+            $assignment = $user->jenis_penugasan ?? $request->header('X-User-Assignment');
+            $sekolahId = $user->sekolah_id ?? $request->header('X-User-Sekolah-Id');
+            $kelurahan = $user->kelurahan ?? $request->header('X-User-Kelurahan');
+            $kabupaten = $user->kabupaten ?? $request->header('X-User-Kabupaten');
+
+            if ($assignment === 'sekolah' && !empty($sekolahId)) {
+                $query->where('sekolah_id', $sekolahId);
+            } elseif ($assignment === 'kelurahan' && !empty($kelurahan)) {
+                $query->where('desa_kelurahan', $kelurahan);
+            } elseif (!empty($kabupaten) && $kabupaten !== 'Provinsi Sulawesi Tengah') {
+                $query->where('kabupaten', $kabupaten);
+            }
+        }
+
         if ($request->filled('search')) {
             $search = trim($request->search);
             $query->orderByRaw("CASE WHEN nama LIKE ? THEN 0 ELSE 1 END", ["{$search}%"])

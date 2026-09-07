@@ -57,7 +57,7 @@ class TindakLanjutController extends Controller
     public function store(StoreTindakLanjutRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $data['user_id'] = $request->user()?->id;
+        $data['user_id'] = $request->header('X-User-Id') ?? $request->user()?->id;
 
         if ($request->hasFile('dokumen_pendukung')) {
             $data['dokumen_pendukung_path'] = $request->file('dokumen_pendukung')->store('tindak_lanjut/dokumen', 'public');
