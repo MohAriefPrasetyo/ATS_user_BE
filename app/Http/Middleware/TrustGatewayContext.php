@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Auth\GenericUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TrustGatewayContext
 {
@@ -29,6 +30,7 @@ class TrustGatewayContext
                 'sekolah_id'      => $request->header('X-User-Sekolah-Id', ''),
             ]);
 
+            Auth::setUser($user);
             $request->setUserResolver(fn () => $user);
         }
 
