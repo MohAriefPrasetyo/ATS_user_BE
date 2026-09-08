@@ -72,6 +72,7 @@ class TindakLanjutController extends Controller
         }
 
         $tindakLanjut = TindakLanjut::create($data);
+        $tindakLanjut->anakTidakSekolah?->touch();
 
         return response()->json([
             'success' => true,
@@ -110,6 +111,7 @@ class TindakLanjutController extends Controller
         }
 
         $tindakLanjut->update($data);
+        $tindakLanjut->anakTidakSekolah?->touch();
 
         return response()->json([
             'success' => true,
@@ -124,6 +126,7 @@ class TindakLanjutController extends Controller
     public function destroy(string $id): JsonResponse
     {
         $tindakLanjut = TindakLanjut::findOrFail($id);
+        $ats = $tindakLanjut->anakTidakSekolah;
 
         if ($tindakLanjut->dokumen_pendukung_path && Storage::disk('public')->exists($tindakLanjut->dokumen_pendukung_path)) {
             Storage::disk('public')->delete($tindakLanjut->dokumen_pendukung_path);
@@ -136,6 +139,7 @@ class TindakLanjutController extends Controller
         }
 
         $tindakLanjut->forceDelete();
+        $ats?->touch();
 
         return response()->json([
             'success' => true,

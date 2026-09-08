@@ -25,7 +25,7 @@ class AnakTidakSekolahController extends Controller
             $query->orderByRaw("CASE WHEN nama LIKE ? THEN 0 ELSE 1 END", ["{$search}%"])
                   ->orderBy('nama', 'asc');
         } else {
-            $query->orderBy('created_at', 'desc');
+            $query->orderBy('updated_at', 'desc')->orderBy('id', 'desc');
         }
 
         $data = $query->paginate($request->get('per_page', 15));
