@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 
@@ -72,11 +73,32 @@ class AnakTidakSekolah extends Model
     ];
 
     /**
-     * Relasi ke Tindak Lanjut
+     * Relasi 1-to-1 ke Data Asesmen Lapangan
+     */
+    public function asesmen(): HasOne
+    {
+        return $this->hasOne(Asesmen::class, 'anak_tidak_sekolah_id');
+    }
+
+    /**
+     * Relasi ke Asesmen Lapangan (Collection)
+     */
+    public function asesmens(): HasMany
+    {
+        return $this->hasMany(Asesmen::class, 'anak_tidak_sekolah_id');
+    }
+
+    /**
+     * Relasi ke Tindak Lanjut (Kompatibilitas Legacy)
      */
     public function tindakLanjuts(): HasMany
     {
-        return $this->hasMany(TindakLanjut::class, 'anak_tidak_sekolah_id');
+        return $this->hasMany(Asesmen::class, 'anak_tidak_sekolah_id');
+    }
+
+    public function tindakLanjut(): HasOne
+    {
+        return $this->hasOne(Asesmen::class, 'anak_tidak_sekolah_id');
     }
 
     /**
@@ -84,7 +106,7 @@ class AnakTidakSekolah extends Model
      */
     public function scopeFilter(Builder $query, Request $request): Builder
     {
-        $query->with('tindakLanjuts');
+        $query->with(['asesmen.user', 'tindakLanjuts.user']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -113,18 +135,19 @@ class AnakTidakSekolah extends Model
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('filter_tindak_lanjut')) {
-            $filter = $request->filter_tindak_lanjut;
-            if ($filter === 'sudah_ditindaklanjuti') {
-                $query->has('tindakLanjuts');
-            } elseif ($filter === 'belum_ditindaklanjuti') {
-                $query->doesntHave('tindakLanjuts');
+        // Filter status Asesmen / Tindak Lanjut (Mendukung istilah baru & legacy)
+        $filterAsesmen = $request->get('filter_asesmen', $request->get('filter_tindak_lanjut'));
+        if ($filterAsesmen) {
+            if (in_array($filterAsesmen, ['sudah_diasesmen', 'sudah_ditindaklanjuti', 'sudah'])) {
+                $query->has('asesmens');
+            } elseif (in_array($filterAsesmen, ['belum_diasesmen', 'belum_ditindaklanjuti', 'belum'])) {
+                $query->doesntHave('asesmens');
             }
         }
 
         if ($request->filled('keterangan_tindak_lanjut')) {
             $keterangan = $request->keterangan_tindak_lanjut;
-            $query->whereHas('tindakLanjuts', function ($q) use ($keterangan) {
+            $query->whereHas('asesmens', function ($q) use ($keterangan) {
                 $q->where('keterangan', $keterangan);
             });
         }

@@ -43,7 +43,7 @@ class AnakTidakSekolahController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $ats = AnakTidakSekolah::with(['tindakLanjuts.user'])->findOrFail($id);
+        $ats = AnakTidakSekolah::with(['asesmen.user', 'tindakLanjuts.user'])->findOrFail($id);
 
         return response()->json([
             'success' => true,

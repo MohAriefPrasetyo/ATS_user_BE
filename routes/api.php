@@ -29,8 +29,15 @@ Route::controller(AnakTidakSekolahController::class)->group(function () {
     Route::delete('ats/{id}', 'destroy');
 });
 
-// 3. Modul Form & Riwayat Tindak Lanjut
-Route::controller(TindakLanjutController::class)->group(function () {
+// 3. Modul Form & Riwayat Asesmen Lapangan ATS
+Route::controller(\App\Http\Controllers\Api\AsesmenController::class)->group(function () {
+    Route::get('asesmen', 'index');
+    Route::post('asesmen', 'store');
+    Route::get('asesmen/{id}', 'show');
+    Route::put('asesmen/{id}', 'update');
+    Route::delete('asesmen/{id}', 'destroy');
+
+    // Alias Kompatibilitas Legacy Tindak Lanjut
     Route::get('tindak-lanjut', 'index');
     Route::post('tindak-lanjut', 'store');
     Route::get('tindak-lanjut/{id}', 'show');

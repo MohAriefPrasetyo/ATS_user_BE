@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Asesmen extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $table = 'asesmen';
+
+    protected $fillable = [
+        'anak_tidak_sekolah_id',
+        'user_id',
+        'keterangan',
+        'alasan',
+        'program_intervensi',
+        'dokumen_pendukung_path',
+        'foto_dokumentasi_path',
+        'foto_rumah_path',
+        'tanggal_asesmen',
+        'tanggal_tindak_lanjut',
+    ];
+
+    protected $casts = [
+        'tanggal_asesmen'       => 'date',
+        'tanggal_tindak_lanjut' => 'date',
+    ];
+
+    /**
+     * Relasi ke Anak Tidak Sekolah (ATS)
+     */
+    public function anakTidakSekolah(): BelongsTo
+    {
+        return $this->belongsTo(AnakTidakSekolah::class, 'anak_tidak_sekolah_id');
+    }
+
+    /**
+     * Relasi ke User / Petugas Penginput
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+}

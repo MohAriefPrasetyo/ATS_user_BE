@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreTindakLanjutRequest extends FormRequest
+class StoreAsesmenRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -18,6 +18,7 @@ class StoreTindakLanjutRequest extends FormRequest
             'keterangan'            => 'nullable|string|max:255',
             'alasan'                => 'nullable|string',
             'program_intervensi'    => 'nullable|string',
+            'tanggal_asesmen'       => 'nullable|date',
             'tanggal_tindak_lanjut' => 'nullable|date',
             'dokumen_pendukung'     => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
             'foto_dokumentasi'      => 'nullable|file|mimes:jpg,jpeg,png,webp|max:10240',
