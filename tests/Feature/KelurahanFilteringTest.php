@@ -57,4 +57,35 @@ class KelurahanFilteringTest extends TestCase
         $responseUpper->assertStatus(200);
         $this->assertEquals(2, $responseUpper->json('data.total'));
     }
+
+    /**
+     * Uji penyimpanan tindak lanjut dengan user_id dari Gateway (ID yang tidak ada di tabel users lokal)
+     */
+    public function test_can_save_tindak_lanjut_with_gateway_user_id(): void
+    {
+        $response = $this->withHeaders([
+            'X-User-Id'         => '2',
+            'X-User-Role'       => 'admin',
+            'X-User-Assignment' => 'kelurahan',
+            'X-User-Kabupaten'  => 'Kab. Banggai',
+            'X-User-Kecamatan'  => 'Luwuk',
+            'X-User-Kelurahan'  => 'Bungin',
+        ])->postJson('/api/tindak-lanjut', [
+            'anak_tidak_sekolah_id' => 1639,
+            'keterangan'            => 'sudah lanjut sekolah',
+            'alasan'                => 'Dukungan orang tua penuh',
+            'program_intervensi'    => 'Program Beasiswa Transisi',
+            'tanggal_tindak_lanjut' => '2026-09-08',
+        ]);
+
+        $response->assertStatus(201)
+                 ->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('tindak_lanjut', [
+            'anak_tidak_sekolah_id' => 1639,
+            'user_id'               => 2,
+            'keterangan'            => 'sudah lanjut sekolah',
+            'program_intervensi'    => 'Program Beasiswa Transisi',
+        ]);
+    }
 }
