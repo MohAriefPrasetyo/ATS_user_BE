@@ -152,18 +152,75 @@ class AnakTidakSekolahController extends Controller
     }
 
     /**
-     * Endpoint Export Data Laporan PDF Terfilter.
+     * Endpoint Export Data Laporan PDF / Rekapan Terfilter.
      */
     public function exportPdf(Request $request): JsonResponse
     {
-        $data = AnakTidakSekolah::filter($request)->forAdminContext($request)->get();
+        $query = AnakTidakSekolah::filter($request)->forAdminContext($request);
+
+        $data = $query->with('asesmen:id,anak_tidak_sekolah_id,program_intervensi,tanggal_asesmen,alasan')
+            ->select([
+                'id', 'nik', 'nisn', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir',
+                'nama_ibu_kandung', 'provinsi', 'kabupaten', 'kecamatan', 'desa_kelurahan',
+                'alamat_jalan', 'rt', 'rw', 'sekolah_id', 'nama_sekolah', 'kategori_sekolah',
+                'tingkat_pendidikan', 'status'
+            ])
+            ->get();
 
         return response()->json([
             'success'    => true,
             'message'    => 'Data laporan terfilter berhasil diproses oleh backend.',
             'total_data' => $data->count(),
-            'filters'    => $request->only(['search', 'kabupaten', 'kecamatan', 'status', 'filter_tindak_lanjut', 'keterangan_tindak_lanjut']),
+            'filters'    => $request->only(['search', 'kabupaten', 'kecamatan', 'status', 'kategori_sekolah', 'jenis_kelamin', 'gender', 'filter_asesmen', 'filter_tindak_lanjut']),
             'data'       => $data
+        ]);
+    }
+
+    /**
+     * Ringkasan agregat statistik realtime untuk panel unduh & analytics
+     */
+    public function summary(Request $request): JsonResponse
+    {
+        $baseQuery = AnakTidakSekolah::filter($request)->forAdminContext($request);
+
+        $total = (clone $baseQuery)->count();
+        $statusCounts = (clone $baseQuery)->selectRaw('status, count(*) as count')->groupBy('status')->pluck('count', 'status');
+        $kategoriCounts = (clone $baseQuery)->selectRaw('kategori_sekolah, count(*) as count')->groupBy('kategori_sekolah')->pluck('count', 'kategori_sekolah');
+        $genderCounts = (clone $baseQuery)->selectRaw('jenis_kelamin, count(*) as count')->groupBy('jenis_kelamin')->pluck('count', 'jenis_kelamin');
+        
+        $sudahAsesmen = (clone $baseQuery)->has('asesmens')->count();
+        $belumAsesmen = max(0, $total - $sudahAsesmen);
+
+        // Sebaran wilayah dinamis (Kecamatan jika kabupaten dipilih, Kabupaten jika belum)
+        if ($request->filled('kabupaten')) {
+            $wilayahCounts = (clone $baseQuery)
+                ->selectRaw('kecamatan as name, count(*) as count')
+                ->whereNotNull('kecamatan')
+                ->groupBy('kecamatan')
+                ->orderBy('count', 'desc')
+                ->get();
+        } else {
+            $wilayahCounts = (clone $baseQuery)
+                ->selectRaw('kabupaten as name, count(*) as count')
+                ->whereNotNull('kabupaten')
+                ->groupBy('kabupaten')
+                ->orderBy('count', 'desc')
+                ->get();
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'total'            => $total,
+                'status_counts'    => $statusCounts,
+                'kategori_counts'  => $kategoriCounts,
+                'gender_counts'    => $genderCounts,
+                'asesmen_counts'   => [
+                    'sudah' => $sudahAsesmen,
+                    'belum' => $belumAsesmen,
+                ],
+                'wilayah_counts'   => $wilayahCounts,
+            ]
         ]);
     }
 }

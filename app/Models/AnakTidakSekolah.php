@@ -115,7 +115,8 @@ class AnakTidakSekolah extends Model
             $query->where(function ($q) use ($search) {
                 $q->where('nik', 'like', "%{$search}%")
                   ->orWhere('nisn', 'like', "%{$search}%")
-                  ->orWhere('nama', 'like', "%{$search}%");
+                  ->orWhere('nama', 'like', "%{$search}%")
+                  ->orWhere('nama_sekolah', 'like', "%{$search}%");
             });
         }
 
@@ -134,7 +135,15 @@ class AnakTidakSekolah extends Model
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('status', strtoupper(trim($request->status)));
+        }
+
+        // Filter jenis kelamin (L / P)
+        if ($request->filled('jenis_kelamin') || $request->filled('gender')) {
+            $jk = strtoupper(trim($request->get('jenis_kelamin', $request->get('gender'))));
+            if (in_array($jk, ['L', 'P'])) {
+                $query->where('jenis_kelamin', $jk);
+            }
         }
 
         // Filter status Asesmen / Tindak Lanjut (Mendukung istilah baru & legacy)
@@ -148,13 +157,19 @@ class AnakTidakSekolah extends Model
         }
 
         if ($request->filled('kategori_sekolah')) {
-            $kat = $request->kategori_sekolah;
-            if ($kat === 'SMA_SMK_MA' || $kat === 'SMA / SMK / MA') {
+            $kat = trim($request->kategori_sekolah);
+            if (in_array($kat, ['SMA_SMK_MA', 'SMA / SMK / MA', 'SMA_SMK', 'SMA / SMK'])) {
                 $query->whereIn('kategori_sekolah', ['SMA', 'SMK', 'MA']);
-            } elseif ($kat === 'SMP_MTS' || $kat === 'SMP / MTs') {
+            } elseif (in_array($kat, ['SMP_MTS', 'SMP / MTs', 'SMP_MTS'])) {
                 $query->whereIn('kategori_sekolah', ['SMP', 'MTs']);
-            } elseif ($kat === 'SD_MI' || $kat === 'SD / MI') {
+            } elseif (in_array($kat, ['SD_MI', 'SD / MI'])) {
                 $query->whereIn('kategori_sekolah', ['SD', 'MI']);
+            } elseif (in_array($kat, ['Non-Sekolah', 'Non-Sekolah / Belum Sekolah'])) {
+                $query->where(function ($q) {
+                    $q->where('kategori_sekolah', 'Non-Sekolah')
+                      ->orWhereNull('kategori_sekolah')
+                      ->orWhere('kategori_sekolah', '-');
+                });
             } else {
                 $query->where('kategori_sekolah', $kat);
             }

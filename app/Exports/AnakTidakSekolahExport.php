@@ -22,50 +22,10 @@ class AnakTidakSekolahExport implements FromQuery, WithHeadings, WithMapping
      */
     public function query()
     {
-        $query = AnakTidakSekolah::with('tindakLanjuts');
-
-        // Search NIK, NISN, atau Nama
-        if ($this->request->filled('search')) {
-            $search = $this->request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nik', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%")
-                  ->orWhere('nama', 'like', "%{$search}%");
-            });
-        }
-
-        // Filter Wilayah
-        if ($this->request->filled('kecamatan')) {
-            $query->where('kecamatan', $this->request->kecamatan);
-        }
-        if ($this->request->filled('kabupaten')) {
-            $query->where('kabupaten', $this->request->kabupaten);
-        }
-
-        // Filter Status Baku
-        if ($this->request->filled('status')) {
-            $query->where('status', $this->request->status);
-        }
-
-        // Filter Penanganan (Sudah / Belum Ditindaklanjuti)
-        if ($this->request->filled('filter_tindak_lanjut')) {
-            $filter = $this->request->filter_tindak_lanjut;
-            if ($filter === 'sudah_ditindaklanjuti') {
-                $query->has('tindakLanjuts');
-            } elseif ($filter === 'belum_ditindaklanjuti') {
-                $query->doesntHave('tindakLanjuts');
-            }
-        }
-
-        // Filter spesifik Keterangan Tindak Lanjut
-        if ($this->request->filled('keterangan_tindak_lanjut')) {
-            $keterangan = $this->request->keterangan_tindak_lanjut;
-            $query->whereHas('tindakLanjuts', function ($q) use ($keterangan) {
-                $q->where('keterangan', $keterangan);
-            });
-        }
-
-        return $query->orderBy('created_at', 'desc');
+        return AnakTidakSekolah::filter($this->request)
+            ->forAdminContext($this->request)
+            ->with('asesmen')
+            ->orderBy('id', 'desc');
     }
 
     /**
@@ -79,13 +39,17 @@ class AnakTidakSekolahExport implements FromQuery, WithHeadings, WithMapping
             'NISN',
             'Nama Lengkap',
             'Jenis Kelamin',
-            'Kabupaten',
+            'Provinsi',
+            'Kabupaten / Kota',
             'Kecamatan',
             'Desa / Kelurahan',
+            'Nama Sekolah Asal',
+            'Kategori Sekolah',
             'Status ATS',
-            'Status Penanganan',
+            'Status Asesmen',
             'Program Intervensi',
-            'Catatan Tindak Lanjut',
+            'Tanggal Asesmen',
+            'Catatan Asesmen',
         ];
     }
 
@@ -94,7 +58,7 @@ class AnakTidakSekolahExport implements FromQuery, WithHeadings, WithMapping
      */
     public function map($row): array
     {
-        $tindakLanjutTerakhir = $row->tindakLanjuts->last();
+        $asesmen = $row->asesmen;
 
         return [
             $row->id,
@@ -102,13 +66,17 @@ class AnakTidakSekolahExport implements FromQuery, WithHeadings, WithMapping
             $row->nisn ?? '-',
             $row->nama,
             $row->jenis_kelamin,
+            $row->provinsi ?? 'Sulawesi Tengah',
             $row->kabupaten,
             $row->kecamatan,
             $row->desa_kelurahan,
-            $row->status ?? 'Belum Sekolah',
-            $tindakLanjutTerakhir ? $tindakLanjutTerakhir->keterangan : 'Belum Ditindaklanjuti',
-            $tindakLanjutTerakhir ? ($tindakLanjutTerakhir->program_intervensi ?? '-') : '-',
-            $tindakLanjutTerakhir ? ($tindakLanjutTerakhir->alasan ?? '-') : '-',
+            $row->nama_sekolah ?? '-',
+            $row->kategori_sekolah ?? 'Non-Sekolah',
+            $row->status === 'DO' ? 'Putus Sekolah (DO)' : ($row->status === 'BPB' ? 'Belum Pernah Bersekolah (BPB)' : 'Lulus Tidak Melanjutkan (LTM)'),
+            $asesmen ? 'Sudah Diasesmen' : 'Belum Diasesmen',
+            $asesmen?->program_intervensi ?? '-',
+            $asesmen?->tanggal_asesmen ?? '-',
+            $asesmen?->alasan ?? '-',
         ];
     }
 }

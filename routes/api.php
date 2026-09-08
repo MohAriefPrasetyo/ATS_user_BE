@@ -19,6 +19,7 @@ Route::controller(RiwayatImportController::class)->group(function () {
 
 // 2. Modul Master Data ATS & Laporan Export
 Route::controller(AnakTidakSekolahController::class)->group(function () {
+    Route::get('ats/summary', 'summary');
     Route::get('ats/export-pdf', 'exportPdf');
     Route::get('ats/export', 'exportPdf');
     Route::post('ats/import', 'import');
