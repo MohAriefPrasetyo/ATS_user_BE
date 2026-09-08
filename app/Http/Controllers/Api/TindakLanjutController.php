@@ -62,19 +62,38 @@ class TindakLanjutController extends Controller
         $data = $request->validated();
         $data['user_id'] = $request->header('X-User-Id') ?? $request->user()?->id;
 
+        $atsId = $data['anak_tidak_sekolah_id'];
+        $existing = TindakLanjut::where('anak_tidak_sekolah_id', $atsId)->first();
+
         if ($request->hasFile('dokumen_pendukung')) {
+            if ($existing && $existing->dokumen_pendukung_path && Storage::disk('public')->exists($existing->dokumen_pendukung_path)) {
+                Storage::disk('public')->delete($existing->dokumen_pendukung_path);
+            }
             $data['dokumen_pendukung_path'] = $request->file('dokumen_pendukung')->store('tindak_lanjut/dokumen', 'public');
         }
 
         if ($request->hasFile('foto_dokumentasi')) {
+            if ($existing && $existing->foto_dokumentasi_path && Storage::disk('public')->exists($existing->foto_dokumentasi_path)) {
+                Storage::disk('public')->delete($existing->foto_dokumentasi_path);
+            }
             $data['foto_dokumentasi_path'] = $request->file('foto_dokumentasi')->store('tindak_lanjut/foto', 'public');
         }
 
         if ($request->hasFile('foto_rumah')) {
+            if ($existing && $existing->foto_rumah_path && Storage::disk('public')->exists($existing->foto_rumah_path)) {
+                Storage::disk('public')->delete($existing->foto_rumah_path);
+            }
             $data['foto_rumah_path'] = $request->file('foto_rumah')->store('tindak_lanjut/foto_rumah', 'public');
         }
 
-        $tindakLanjut = TindakLanjut::create($data);
+        // Aturan: 1 ATS HANYA boleh memiliki 1 data tindak lanjut (update jika sudah ada)
+        if ($existing) {
+            $existing->update($data);
+            $tindakLanjut = $existing;
+        } else {
+            $tindakLanjut = TindakLanjut::create($data);
+        }
+
         $tindakLanjut->anakTidakSekolah?->touch();
 
         return response()->json([
