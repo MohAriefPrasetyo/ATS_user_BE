@@ -18,29 +18,8 @@ class AnakTidakSekolahController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = AnakTidakSekolah::filter($request);
-
-        // Saring data secara otomatis jika user login adalah Admin dengan penugasan spesifik
-        $user = $request->user() ?? \Illuminate\Support\Facades\Auth::user();
-        $userRole = $user->role ?? $request->header('X-User-Role');
-
-        if ($userRole === 'admin') {
-            $assignment = $user->jenis_penugasan ?? $request->header('X-User-Assignment');
-            $sekolahId = $user->sekolah_id ?? $request->header('X-User-Sekolah-Id');
-            $kelurahan = $user->kelurahan ?? $request->header('X-User-Kelurahan');
-            $kabupaten = $user->kabupaten ?? $request->header('X-User-Kabupaten');
-
-            if ($assignment === 'sekolah' && !empty($sekolahId)) {
-                $query->where('sekolah_id', $sekolahId);
-            } elseif ($assignment === 'kelurahan' && !empty($kelurahan)) {
-                $query->where(function ($q) use ($kelurahan) {
-                    $q->where('desa_kelurahan', $kelurahan)
-                      ->orWhere('desa_kelurahan', 'LIKE', "%{$kelurahan}%");
-                });
-            } elseif (!empty($kabupaten) && $kabupaten !== 'Provinsi Sulawesi Tengah') {
-                $query->where('kabupaten', $kabupaten);
-            }
-        }
+        // Saring data berdasarkan filter request dan hak akses penugasan Admin (wilayah / sekolah)
+        $query = AnakTidakSekolah::filter($request)->forAdminContext($request);
 
         if ($request->filled('search')) {
             $search = trim($request->search);
@@ -177,7 +156,7 @@ class AnakTidakSekolahController extends Controller
      */
     public function exportPdf(Request $request): JsonResponse
     {
-        $data = AnakTidakSekolah::filter($request)->get();
+        $data = AnakTidakSekolah::filter($request)->forAdminContext($request)->get();
 
         return response()->json([
             'success'    => true,

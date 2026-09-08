@@ -17,7 +17,10 @@ class TindakLanjutController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = TindakLanjut::with(['anakTidakSekolah', 'user']);
+        $query = TindakLanjut::with(['anakTidakSekolah', 'user'])
+            ->whereHas('anakTidakSekolah', function ($q) use ($request) {
+                $q->forAdminContext($request);
+            });
 
         if ($request->filled('anak_tidak_sekolah_id')) {
             $query->where('anak_tidak_sekolah_id', $request->anak_tidak_sekolah_id);
