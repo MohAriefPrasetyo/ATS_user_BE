@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\AnakTidakSekolah;
+use App\Services\SchoolLookupService;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
@@ -145,10 +146,18 @@ class AnakTidakSekolahImport implements ToModel, WithHeadingRow, WithChunkReadin
             return null;
         }
 
+        // Resolusi otomatis nama_sekolah dan kategori_sekolah (SMA, SMK, MA, SMP, MTs, SD, MI, SLB, Non-Sekolah, dll)
+        $inputNamaSekolah = $this->cleanString($this->getValue($row, 'nama_sekolah', 43));
+        $resolvedSchool = SchoolLookupService::resolve($sekolah_id, $inputNamaSekolah);
+        $nama_sekolah = $resolvedSchool['nama_sekolah'];
+        $kategori_sekolah = $this->cleanString($this->getValue($row, 'kategori_sekolah', 44)) ?: $resolvedSchool['kategori_sekolah'];
+
         $now = now();
 
         return new AnakTidakSekolah([
             'sekolah_id'                 => $sekolah_id,
+            'nama_sekolah'               => $nama_sekolah,
+            'kategori_sekolah'           => $kategori_sekolah,
             'tahun'                      => $tahun,
             'semester_id'                => $semester_id,
             'peserta_didik_id'           => $peserta_didik_id,

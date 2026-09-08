@@ -18,6 +18,8 @@ class AnakTidakSekolah extends Model
 
     protected $fillable = [
         'sekolah_id',
+        'nama_sekolah',
+        'kategori_sekolah',
         'tahun',
         'semester_id',
         'peserta_didik_id',
@@ -145,11 +147,17 @@ class AnakTidakSekolah extends Model
             }
         }
 
-        if ($request->filled('keterangan_tindak_lanjut')) {
-            $keterangan = $request->keterangan_tindak_lanjut;
-            $query->whereHas('asesmens', function ($q) use ($keterangan) {
-                $q->where('keterangan', $keterangan);
-            });
+        if ($request->filled('kategori_sekolah')) {
+            $kat = $request->kategori_sekolah;
+            if ($kat === 'SMA_SMK_MA' || $kat === 'SMA / SMK / MA') {
+                $query->whereIn('kategori_sekolah', ['SMA', 'SMK', 'MA']);
+            } elseif ($kat === 'SMP_MTS' || $kat === 'SMP / MTs') {
+                $query->whereIn('kategori_sekolah', ['SMP', 'MTs']);
+            } elseif ($kat === 'SD_MI' || $kat === 'SD / MI') {
+                $query->whereIn('kategori_sekolah', ['SD', 'MI']);
+            } else {
+                $query->where('kategori_sekolah', $kat);
+            }
         }
 
         return $query;
