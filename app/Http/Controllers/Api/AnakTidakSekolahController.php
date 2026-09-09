@@ -163,7 +163,7 @@ class AnakTidakSekolahController extends Controller
                 'id', 'nik', 'nisn', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir',
                 'nama_ibu_kandung', 'provinsi', 'kabupaten', 'kecamatan', 'desa_kelurahan',
                 'alamat_jalan', 'rt', 'rw', 'sekolah_id', 'nama_sekolah', 'kategori_sekolah',
-                'tingkat_pendidikan', 'status'
+                'tingkat_pendidikan', 'status', 'alasan_approval_keterangan', 'alasan_lainnya'
             ])
             ->get();
 

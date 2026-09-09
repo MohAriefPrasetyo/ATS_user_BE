@@ -46,6 +46,7 @@ class AnakTidakSekolahExport implements FromQuery, WithHeadings, WithMapping
             'Nama Sekolah Asal',
             'Kategori Sekolah',
             'Status ATS',
+            'Alasan',
             'Status Asesmen',
             'Program Intervensi',
             'Tanggal Asesmen',
@@ -59,6 +60,9 @@ class AnakTidakSekolahExport implements FromQuery, WithHeadings, WithMapping
     public function map($row): array
     {
         $asesmen = $row->asesmen;
+        $alasanAts = ($row->alasan_approval_keterangan && $row->alasan_approval_keterangan !== '-') 
+            ? $row->alasan_approval_keterangan 
+            : ($row->alasan_lainnya ?? '-');
 
         return [
             $row->id,
@@ -73,6 +77,7 @@ class AnakTidakSekolahExport implements FromQuery, WithHeadings, WithMapping
             $row->nama_sekolah ?? '-',
             $row->kategori_sekolah ?? 'Non-Sekolah',
             $row->status === 'DO' ? 'Putus Sekolah (DO)' : ($row->status === 'BPB' ? 'Belum Pernah Bersekolah (BPB)' : 'Lulus Tidak Melanjutkan (LTM)'),
+            $alasanAts,
             $asesmen ? 'Sudah Diasesmen' : 'Belum Diasesmen',
             $asesmen?->program_intervensi ?? '-',
             $asesmen?->tanggal_asesmen ?? '-',
